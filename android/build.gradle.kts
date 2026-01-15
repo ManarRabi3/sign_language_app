@@ -1,3 +1,8 @@
+// ملف build.gradle.kts الرئيسي
+
+import org.gradle.api.tasks.Delete
+
+// 1️⃣ كل المشاريع تستخدم المستودعات الرسمية
 allprojects {
     repositories {
         google()
@@ -5,20 +10,21 @@ allprojects {
     }
 }
 
-val newBuildDir: Directory =
-    rootProject.layout.buildDirectory
-        .dir("../../build")
-        .get()
-rootProject.layout.buildDirectory.value(newBuildDir)
+// 2️⃣ تغيير مكان مجلد build الرئيسي لمجلد خارجي لتقليل مشاكل التخزين
+val newBuildDir = rootProject.layout.buildDirectory.dir("../../build").get()
+rootProject.layout.buildDirectory.set(newBuildDir)
 
+// 3️⃣ تغيير مكان مجلد build لكل المشاريع الفرعية
 subprojects {
-    val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
-    project.layout.buildDirectory.value(newSubprojectBuildDir)
+    project.layout.buildDirectory.set(newBuildDir.dir(project.name))
 }
+
+// 4️⃣ التأكد إن المشاريع الفرعية بتتقيم بعد مشروع :app
 subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// 5️⃣ تعريف task تنظيف آمن لمجلد build
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
